@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
-import json
 
 # ============================================
 # MODELO: PERFIL DE USUARIO
@@ -118,7 +117,7 @@ class CalificacionTributaria(models.Model):
         default=Decimal('0.00000000')
     )
     
-    # Factores tributarios (8-37) - Todos con validación <= 1
+    # Factores tributarios (8-19)
     factor_8 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
         validators=[MinValueValidator(0), MaxValueValidator(1)],
@@ -146,40 +145,34 @@ class CalificacionTributaria(models.Model):
     )
     factor_13 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Otras rentas sin prioridad'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_14 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Exceso distribuciones desproporcionadas'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_15 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Utilidades ISFUT Ley 20.780'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_16 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Rentas <= 31.12.1983 o ISFUT Ley 21.210'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_17 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Rentas exentas IGC Art.11 Ley 18.401'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_18 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Rentas exentas IGC/IA'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
     factor_19 = models.DecimalField(
         max_digits=9, decimal_places=8, default=Decimal('0.00000000'),
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text='Ingresos no constitutivos de renta'
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
     )
-    # Factores 20-37 (continúa con el mismo patrón)
+    
+    # Factores 20-37 (mismo patrón)
     factor_20 = models.DecimalField(max_digits=9, decimal_places=8, default=Decimal('0.00000000'), validators=[MinValueValidator(0), MaxValueValidator(1)])
     factor_21 = models.DecimalField(max_digits=9, decimal_places=8, default=Decimal('0.00000000'), validators=[MinValueValidator(0), MaxValueValidator(1)])
     factor_22 = models.DecimalField(max_digits=9, decimal_places=8, default=Decimal('0.00000000'), validators=[MinValueValidator(0), MaxValueValidator(1)])
@@ -219,8 +212,6 @@ class CalificacionTributaria(models.Model):
             models.Index(fields=['usuario', 'ejercicio', 'mercado']),
             models.Index(fields=['instrumento', 'fecha_pago']),
         ]
-        # Constraint: Llave única para evitar duplicados
-        unique_together = [['usuario', 'ejercicio', 'instrumento', 'secuencia_evento', 'es_local']]
     
     def __str__(self):
         return f"{self.instrumento} - {self.ejercicio} - Sec.{self.secuencia_evento}"
@@ -236,22 +227,6 @@ class CalificacionTributaria(models.Model):
             raise ValidationError(
                 f'La suma de los factores 8 al 16 no puede superar 1. Suma actual: {suma}'
             )
-    
-    def calcular_factores_desde_montos(self, montos_dict):
-        """
-        Calcula los 30 factores a partir de los montos ingresados
-        montos_dict: diccionario con claves 'monto_8' ... 'monto_37'
-        """
-        suma_total = sum([
-            montos_dict.get(f'monto_{i}', Decimal('0')) 
-            for i in range(8, 20)
-        ])
-        
-        if suma_total > 0:
-            for i in range(8, 38):
-                monto = montos_dict.get(f'monto_{i}', Decimal('0'))
-                factor = monto / suma_total
-                setattr(self, f'factor_{i}', round(factor, 8))
 
 
 # ============================================

@@ -21,7 +21,7 @@ class PerfilInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     inlines = (PerfilInline,)
     list_display = ('username', 'email', 'get_rol', 'get_nombre_completo', 'is_active', 'date_joined')
-    list_filter = ('is_active', 'perfil__rol')
+    list_filter = ('is_active',)
     
     def get_rol(self, obj):
         return obj.perfil.get_rol_display() if hasattr(obj, 'perfil') else '-'
@@ -65,7 +65,6 @@ class CalificacionTributariaAdmin(admin.ModelAdmin):
         'instrumento', 
         'descripcion',
         'usuario__username',
-        'usuario__perfil__nombre_completo'
     )
     readonly_fields = ('created_at', 'updated_at')
     
@@ -133,34 +132,6 @@ class CalificacionTributariaAdmin(admin.ModelAdmin):
         if hasattr(request.user, 'perfil') and request.user.perfil.rol == 'ADMIN':
             return qs
         return qs.filter(usuario=request.user)
-    
-    def save_model(self, request, obj, form, change):
-        """Registrar en log antes de guardar"""
-        datos_anteriores = None
-        if change:
-            # Capturar estado anterior
-            original = CalificacionTributaria.objects.get(pk=obj.pk)
-            datos_anteriores = {
-                'instrumento': original.instrumento,
-                'ejercicio': original.ejercicio,
-                'factor_8': str(original.factor_8),
-                # ... otros campos relevantes
-            }
-        
-        super().save_model(request, obj, form, change)
-        
-        # Crear log
-        LogOperacion.objects.create(
-            usuario=request.user,
-            calificacion=obj,
-            operacion='UPDATE' if change else 'CREATE',
-            datos_anteriores=datos_anteriores,
-            datos_nuevos={
-                'instrumento': obj.instrumento,
-                'ejercicio': obj.ejercicio,
-                'factor_8': str(obj.factor_8),
-            }
-        )
 
 
 # ============================================
@@ -181,37 +152,9 @@ class CargaMasivaAdmin(admin.ModelAdmin):
     search_fields = ('nombre_archivo', 'usuario__username')
     readonly_fields = ('fecha_carga',)
     
-    fieldsets = (
-        ('Información de Carga', {
-            'fields': (
-                'usuario',
-                'tipo_carga',
-                'nombre_archivo',
-                'fecha_carga',
-            )
-        }),
-        ('Estadísticas', {
-            'fields': (
-                'registros_procesados',
-                'registros_exitosos',
-                'registros_fallidos',
-                'errores_detalle',
-            )
-        }),
-    )
-    
     def get_usuario(self, obj):
         return obj.usuario.perfil.nombre_completo if hasattr(obj.usuario, 'perfil') else obj.usuario.username
     get_usuario.short_description = 'Usuario'
-    
-    def get_queryset(self, request):
-        """Corredores solo ven sus cargas"""
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        if hasattr(request.user, 'perfil') and request.user.perfil.rol == 'ADMIN':
-            return qs
-        return qs.filter(usuario=request.user)
 
 
 # ============================================
@@ -224,48 +167,13 @@ class LogOperacionAdmin(admin.ModelAdmin):
         'get_usuario',
         'operacion',
         'get_calificacion',
-        'get_carga',
         'ip_address'
     )
     list_filter = ('operacion', 'fecha_hora')
-    search_fields = (
-        'usuario__username',
-        'calificacion__instrumento',
-        'ip_address'
-    )
+    search_fields = ('usuario__username', 'calificacion__instrumento')
     readonly_fields = (
-        'usuario',
-        'calificacion',
-        'carga_masiva',
-        'operacion',
-        'datos_anteriores',
-        'datos_nuevos',
-        'ip_address',
-        'fecha_hora'
-    )
-    
-    fieldsets = (
-        ('Información de Auditoría', {
-            'fields': (
-                'usuario',
-                'operacion',
-                'fecha_hora',
-                'ip_address',
-            )
-        }),
-        ('Referencias', {
-            'fields': (
-                'calificacion',
-                'carga_masiva',
-            )
-        }),
-        ('Datos de Cambio', {
-            'fields': (
-                'datos_anteriores',
-                'datos_nuevos',
-            ),
-            'classes': ('collapse',),
-        }),
+        'usuario', 'calificacion', 'carga_masiva', 'operacion',
+        'datos_anteriores', 'datos_nuevos', 'ip_address', 'fecha_hora'
     )
     
     def get_usuario(self, obj):
@@ -276,26 +184,11 @@ class LogOperacionAdmin(admin.ModelAdmin):
         return str(obj.calificacion) if obj.calificacion else '-'
     get_calificacion.short_description = 'Calificación'
     
-    def get_carga(self, obj):
-        return obj.carga_masiva.nombre_archivo if obj.carga_masiva else '-'
-    get_carga.short_description = 'Carga Masiva'
-    
     def has_add_permission(self, request):
-        """No se pueden crear logs manualmente"""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """No se pueden eliminar logs (auditoría)"""
         return False
-    
-    def get_queryset(self, request):
-        """Corredores solo ven sus logs"""
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        if hasattr(request.user, 'perfil') and request.user.perfil.rol == 'ADMIN':
-            return qs
-        return qs.filter(usuario=request.user)
 
 
 # ============================================
