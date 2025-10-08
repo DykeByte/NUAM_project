@@ -89,14 +89,6 @@ http://127.0.0.1:8000/
 
 ---
 
-## 📌 Recomendaciones
-
-* Mantén tu `.env` fuera del repositorio (`.gitignore` ya lo protege).
-* Para colaborar, tus amigos deben usar **`.env.example`** como plantilla.
-* Si trabajas con Supabase, asegúrate de usar los datos de conexión correctos de tu proyecto.
-
----
-
 ## 📂 Estructura del proyecto
 
 * `gestion_tributaria/` → app principal para manejar la gestión de calificaciones.
@@ -104,15 +96,5 @@ http://127.0.0.1:8000/
 * `.env.example` → ejemplo de variables de entorno.
 * `requirements.txt` → dependencias del proyecto.
 * `manage.py` → script de administración de Django.
-
----
-
-## 👥 Colaboración
-
-1. Clonar el repo.
-2. Copiar `.env.example` a `.env` y rellenar variables con credenciales propias.
-3. Instalar dependencias (`pip install -r requirements.txt`).
-4. Migrar base de datos (`python manage.py migrate`).
-5. Ejecutar servidor (`python manage.py runserver`).
 
 
