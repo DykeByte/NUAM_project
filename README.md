@@ -1,100 +1,58 @@
 # Sistema de Calificaciones Tributarias - NUAM
 
-Sistema web para la gestión de calificaciones tributarias de instrumentos financieros.
+Web app para gestionar calificaciones tributarias de instrumentos financieros.
 
----
+## Instalación rápida
 
-## 🛠 Tecnologías
-
-* **Django** 5.x
-* **Python** 3.11+
-* **PostgreSQL** (Supabase)
-* **python-decouple** para manejo de variables de entorno
-* **psycopg2-binary** para conexión con PostgreSQL
-
----
-
-## 🚀 Instalación
-
-Sigue estos pasos para configurar y ejecutar el proyecto localmente:
-
-### 1️⃣ Clonar el repositorio
+1. Clonar el repositorio:
 
 ```bash
-git clone git@github.com:DykeByte/NUAM_project.git
-cd NUAM_project
-```
+git clone https://github.com/DykeByte/NUAM_project.git
+cd django_nuam_app
+Crear y activar entorno virtual:
 
-### 2️⃣ Crear entorno virtual
-
-```bash
+bash
+Copiar código
 python3 -m venv venv
-source venv/bin/activate  # macOS / Linux
-# venv\Scripts\activate    # Windows
-```
+source venv/bin/activate  # macOS/Linux
+venv\Scripts\activate     # Windows
+Instalar dependencias:
 
-### 3️⃣ Instalar dependencias
-
-```bash
+bash
+Copiar código
 pip install -r requirements.txt
-```
+Configurar .env con tus credenciales (incluyendo PostgreSQL en Railway).
 
-### 4️⃣ Configurar variables de entorno
+Aplicar migraciones:
 
-1. Copiar el archivo de ejemplo:
-
-```bash
-cp .env.example .env
-```
-
-2. Rellenar `.env` con tus propias credenciales:
-
-```env
-SECRET_KEY=tu_clave_secreta
-DEBUG=True
-DB_NAME=nombre_base_de_datos
-DB_USER=usuario_postgres
-DB_PASSWORD=clave_postgres
-DB_HOST=host_supabase
-DB_PORT=5432
-```
-
-> ⚠️ **No compartas tu `.env` con nadie.** Este archivo contiene claves sensibles.
-
-### 5️⃣ Migrar la base de datos
-
-```bash
+bash
+Copiar código
 python manage.py migrate
-```
+Crear superusuario para acceder al admin:
 
-### 6️⃣ Crear superusuario
-
-```bash
+bash
+Copiar código
 python manage.py createsuperuser
-```
+Ejecutar servidor local:
 
-Sigue las instrucciones para crear un usuario administrador.
-
-### 7️⃣ Ejecutar el servidor
-
-```bash
+bash
+Copiar código
 python manage.py runserver
-```
+Modelos principales
+Perfil → Roles y datos de usuario.
 
-Accede al proyecto en tu navegador:
+CargaMasiva → Registro de cargas de datos.
 
-```
-http://127.0.0.1:8000/
-```
+CalificacionTributaria → Información y factores tributarios.
 
----
+LogOperacion → Historial de operaciones y cargas.
 
-## 📂 Estructura del proyecto
+Base de datos
+PostgreSQL en Railway
 
-* `gestion_tributaria/` → app principal para manejar la gestión de calificaciones.
-* `sistema_tributario/` → configuración del proyecto Django.
-* `.env.example` → ejemplo de variables de entorno.
-* `requirements.txt` → dependencias del proyecto.
-* `manage.py` → script de administración de Django.
+Tablas creadas automáticamente desde las migraciones (0001_initial.py).
 
+Notas
+No subir tu .env con credenciales reales.
 
+Usar .env.example como guía para otros desarrolladores.
